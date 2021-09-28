@@ -1,65 +1,75 @@
 import java.util.Arrays;
 
+public static class DynamicArray<T> {
 
-public class DynamicArray<T> {
-    private Object[] array;
-    private int size;
-    private int capacity;
+    private final int minLength = 10;
+    private T[] data;
+    private int length, last;
 
     public DynamicArray() {
-        size = 0;
-        capacity = 2;
-        array = new Object[2];
+        last = -1;
+        length = minLength;
+        data = (T[]) new Object[length];
     }
 
-    public void ensureCapacity(int minCapacity) {
-        Object[] temp = new Object[minCapacity * capacity];
-        for (int i = 0; i < capacity; i++) {
-            temp[i] = (int) array[i];
-        }
-        array = temp;
-        capacity = capacity * minCapacity;
-    }
-
-    public void trimToSize() {
-        Object[] temp = new Object[size];
-        for (int i = 0; i < size; i++) {
-            temp[i] = (int) array[i];
-        }
-        array = temp;
-        capacity = array.length;
-    }
-
-    public void add(int index, T el) {
-        System.arraycopy(el, index,
-                el, index + 1,
-                size - index);
-        size++;
-
+    public int getLength() {
+        return last + 1;
     }
 
     public T get(int index) {
-        return (T) array[index];
+        if (index < 0 || index >= getLength())
+            throw new IndexOutOfBoundsException("wrong index");
+
+        return data[index];
     }
 
-    public void remove(Object[] es, int index) {
-        final int newSize;
-        if ((newSize = size - 1) > index)
-            System.arraycopy(es, index + 1, es, index, newSize - index);
-        es[size = newSize] = null;
+    public void set(int index, T value) {
+        if (index < 0 || index >= getLength())
+            throw new IndexOutOfBoundsException("wrong index");
+
+        data[index] = value;
     }
 
-    public int size() {
-        return size;
+    private void resize() {
+        T[] temp = Arrays.copyOfRange(data, 0, getLength());
+        length = (length * 3) / 2 + 1;
+        data = (T[]) new Object[length];
+        for (int i = 0; i < temp.length; i++)
+            data[i] = temp[i];
+    }
+
+    private void trim() {
+        if (last > -1)
+            data = Arrays.copyOfRange(data, 0, getLength());
+    }
+
+    public void add(T value) {
+        if (last == length - 1) {
+            resize();
+        }
+        last++;
+        data[last] = value;
     }
 
 
-    public int capacity() {
-        return capacity;
+    public void delete(int index) {
+        if (index < 0 || index >= getLength())
+            throw new IndexOutOfBoundsException("wrong index");
+
+        for (int i = index; i < last; i++) {
+            data[i] = data[i + 1];
+        }
+        last--;
+
+        if (Math.round(length / last) >= 2) {
+            trim();
+        }
     }
 
-    
-    public void printElements() {
-        System.out.println("elements in array are :" + Arrays.toString(array));
+
+    public T[] toArray() {
+        return (T[]) Arrays.copyOfRange(data, 0, getLength());
     }
+
+
 }
